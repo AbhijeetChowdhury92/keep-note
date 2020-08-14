@@ -87,11 +87,11 @@ router.route('/:id').delete((req, res) => {
 router.use(authenticateToken).route('/updateuser').post((req, res) => {
     User.findById(req.user.userID)
         .then(user => {
-            user.firstName = (req.body.firstName.trim() !== "") && user.firstName
-            user.lastName = (req.body.lastName.trim() !== "") && user.lastName
-            user.email = (req.body.email.trim() !== "") && user.email
-            user.mobileNumber = Number((req.body.mobileNumber.toString().trim() !== "") && user.mobileNumber)
-            user.profilePic = (req.body.profilePic.trim() !== "") &&  user.profilePic
+            user.firstName = (req.body.firstName.trim() !== "") ? req.body.firstName: user.firstName
+            user.lastName = (req.body.lastName.trim() !== "") ?req.body.lastName: user.lastName
+            user.email = (req.body.email.trim() !== "") ? req.body.email: user.email
+            user.mobileNumber = Number((req.body.mobileNumber.toString().trim() !== "") ? req.body.mobileNumber.toString() : user.mobileNumber)
+            user.profilePic = (req.body.profilePic.trim() !== "") ? req.body.profilePic :  user.profilePic
             user.save()
                 .then(() => res.json("User updated"))
                 .catch(err => res.status(400).json(`Error = ${err}`))
