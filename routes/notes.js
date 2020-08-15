@@ -1,5 +1,4 @@
 require('dotenv').config()
-const express = require('express')
 const router = require('express').Router()
 const jwt = require('jsonwebtoken')
 const multer = require('multer')
@@ -51,10 +50,10 @@ router.use(authenticateToken).use(upload).route('/addEditNote').post((req, res) 
     if (req.body._id.trim()) {
         Note.findById(req.body._id)
             .then(note => {
-                note.title = (req.body.title.trim() === "") ? req.body.title : note.title
-                note.body = (req.body.body.trim() === "") ? req.body.body : note.body
+                note.title = !req.body.title.trim() ?  note.title : req.body.title
+                note.body = !req.body.body.trim() ? note.body : req.body.body
                 note.image = req.file ? req.file.filename : (isImageDeleteNeeded ? "" : req.body.image)
-                note.noteColor = (req.body.noteColor.trim() === "") ? req.body.noteColor : note.noteColor
+                note.noteColor = !req.body.noteColor ? note.noteColor : req.body.noteColor
                 note.creator = req.user.userID
 
                 note.save()
