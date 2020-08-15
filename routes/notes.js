@@ -11,8 +11,15 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         if (file) {
-            req.body.image && fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
-            cb(null, `${Date.now()}${path.extname(file.originalname)}`);
+            try {
+                req.body.image && fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
+            }
+            catch (err) {
+                console.log(err)
+            }
+            finally {
+                cb(null, `${Date.now()}${path.extname(file.originalname)}`)
+            }
         }
 
     }
@@ -45,12 +52,18 @@ router.use(authenticateToken).route('/').get((req, res) => {
 //add edit note 
 router.use(authenticateToken).use(upload).route('/addEditNote').post((req, res) => {
     let isImageDeleteNeeded = JSON.parse((["true", "false"].includes(req.body.isNotePicDeleted)) ? req.body.isNotePicDeleted : "false")
-    if (isImageDeleteNeeded && req.body.image)
-        fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
+    if (isImageDeleteNeeded && req.body.image) {
+        try {
+            fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
+        }
+        catch (err) {
+            console.log(err)
+        }
+    }
     if (req.body._id.trim()) {
         Note.findById(req.body._id)
             .then(note => {
-                note.title = !req.body.title.trim() ?  note.title : req.body.title
+                note.title = !req.body.title.trim() ? note.title : req.body.title
                 note.body = !req.body.body.trim() ? note.body : req.body.body
                 note.image = req.file ? req.file.filename : (isImageDeleteNeeded ? "" : req.body.image)
                 note.noteColor = !req.body.noteColor ? note.noteColor : req.body.noteColor
@@ -77,10 +90,17 @@ router.use(authenticateToken).use(upload).route('/addEditNote').post((req, res) 
 })
 //delete note
 router.use(authenticateToken).route('/deleteNote').post((req, res) => {
-    req.body.image && fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
-    Note.findByIdAndDelete(req.body._id)
+    try{
+        req.body.image && fs.unlinkSync(`./public/uploads/notePics/${req.body.image}`)
+    }
+    catch(err){
+        console.log(err)
+    }
+    finally{
+        Note.findByIdAndDelete(req.body._id)
         .then(() => res.json('Note deleted'))
         .catch(err => res.status(400).json(`Error = ${err}`))
+    }
 })
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"]
